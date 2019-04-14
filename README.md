@@ -1,6 +1,6 @@
 # Projects
 
-#### Repo for college projects.
+#### Repo for college projects
 
 Includes projects in:
 
