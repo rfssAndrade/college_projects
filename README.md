@@ -1,4 +1,6 @@
-**Collection of projects made for college classes.**
+# Projects
+
+#### Repo for college projects.
 
 Includes projects in:
 
