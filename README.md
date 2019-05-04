@@ -6,3 +6,5 @@ Includes projects in:
 
 - Python
 - C
+- Prolog
+- Java
