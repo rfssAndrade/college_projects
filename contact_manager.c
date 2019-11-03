@@ -74,9 +74,6 @@ void insert_domain(p_domain new, p_domain *domains);
 p_domain *expand_domains(p_domain *domains);
 void free_domains();
 void read_line(char s[]);
-int compare_pref(char *pref, char *string);
-void command_P(list *l);
-char *pertence(char *name);
 
 
 int main() {
@@ -117,10 +114,6 @@ int main() {
                 command_c(domains);
                 break;
             
-            case 'P':
-                command_P(l);
-                break;
-
             case 'x':
                 command_x(l, contacts, domains);
                 return 0;
@@ -160,9 +153,17 @@ void read_line(char s[]) {
 void command_a(list *l, p_domain *domains, link *contacts) {
     p_contact c = create_contact(contacts);
 
+    /* if the contact is impossible to create, causes an error,
+    which is handled by ther error() function */
+    if (c == NULL) {
+        error('a');
+        return;
+    }
+
     /* if the contact can be created, continue*/
-    char *domain;
-    p_domain temp;
+    else {
+        char *domain;
+        p_domain temp;
 
         /* creates a node for the contact to be inserted in
         the linked list and the name hashtable */
@@ -185,6 +186,7 @@ void command_a(list *l, p_domain *domains, link *contacts) {
             temp = create_domain(domain);
             insert_domain(temp, domains);
         }
+    }
 }
 
 
@@ -193,18 +195,10 @@ void command_a(list *l, p_domain *domains, link *contacts) {
 /* ------------------------------------------------------ */
 void command_l(list *l) {
     link t = l->head;
-    char *temp;
-    char *name;
 
     /* while the list still has a next contact, prints it*/
     while (t != NULL) {
-        if ((temp = pertence(t->info->name)) != NULL) {
-            name = t->info->name - temp;
-            printf("%s (%s) %s %s\n", t->info->name, name, t->info->email, t->info->phone);
-        }
-        else
-            print_contact(t->info);
-
+        print_contact(t->info);
         t = t->next;
     }
 }
@@ -352,27 +346,20 @@ p_contact create_contact(link *contacts) {
 
     read_line(buffer);
 
+    /* searches for a contact with the same name, and if found
+    returns a NULL pointer */
+    token = strtok(buffer, " ");
+    if (search_contact(contacts, token) != NULL) {
+        return NULL;
+    }
 
     /* if it doesn't find any contacts with the given name,
     creates one (allocates memory for each component and then
     adds the input info */
     c = malloc(sizeof(struct Contact));
-    /* searches for a contact with the same name, and if found
-    returns a NULL pointer */
-    token = strtok(buffer, " ");
-    if (search_contact(contacts, token) != NULL) {
-        c->name = malloc(sizeof(char) * (strlen(token) + 1 + 2));
-        strcpy(c->name, token);
-        strcat(c->name, "_1");
-        while (search_contact(contacts, c->name) != NULL) {
-            c->name = realloc(c->name, (strlen(c->name) + 2) * sizeof(char));
-            strcat(c->name, "_1");
-        }
-    }
 
-    else {
-        c->name = malloc(sizeof(char) * (strlen(token) + 1));
-        strcpy(c->name, token); }
+    c->name = malloc(sizeof(char) * (strlen(token) + 1));
+    strcpy(c->name, token);
 
     token = strtok(NULL, " ");
     c->email = malloc(sizeof(char) * (strlen(token) + 1));
@@ -767,44 +754,4 @@ link remove_contact(link *contacts, char *name) {
     
     /* returns the removed contact */
     return temp;
-}
-
-
-void command_P(list *l) {
-    char buffer[100];
-    link aux = l->head;
-    int count_pref = 0;
-
-    scanf("%s", buffer);
-    while(aux != NULL) {
-        if (compare_pref(buffer, aux->info->name))
-            count_pref++;
-        aux = aux->next;
-    }
-    printf("%d\n", count_pref);
-}
-
-
-int compare_pref(char *pref, char *string) {
-    char *aux = pref;
-    while (*aux != '\0' && *string != '\0') {
-        if (*aux != *string)
-            return 0;
-        aux++;
-        string++;
-    }
-    return 1;
-}
-
-
-char *pertence(char *name) {
-    
-    while (*name != '\0') {
-        if (strcmp(name, "_1") == 0) {
-            return name;
-        }
-        name++;
-    }
-
-    return NULL;
 }
